@@ -1,27 +1,24 @@
 #!/usr/bin/env python
 
 import rospy
-import time
 import math
+import time
 from ff_msgs.msg import EkfState, FamCommand
 from geometry_msgs.msg import PoseStamped, Vector3
+from dynamic_reconfigure.server import Server
+from auto_nav.cfg import AutoNavConfigConfig as AutoNavConfig
 
 # Initialize global variables
 first_time = True
-pose_0 = PoseStamped()  # Initial pose
 pose_current = PoseStamped()  # Current pose
+pose_0 = PoseStamped()  # Initial pose
 
 # Define desired position and orientation (adjust these values according to your requirements)
-desired_position = Vector3(x=11.0, y=-5.0, z=4.9)
+desired_position = Vector3(x=11.0, y=-6.0, z=5)
 desired_orientation = Vector3(x=0.0, y=0.0, z=0.0)  # Desired orientation change in radians
 kp_linear = 0.2  # Proportional gain for linear control
 kp_angular = 0.2  # Proportional gain for angular control
-
-# Initialize the ROS node
-rospy.init_node("auto_nav")
-
-# Publisher for the FamCommand messages
-pub = rospy.Publisher("/honey/gnc/ctl/command", FamCommand, queue_size=1)
+max_velocity = 0.05  # Maximum velocity limit
 
 # Callback function for the EKF state updates
 # Inputs: msg (EkfState) - the current EKF state message
@@ -33,11 +30,16 @@ def callback(msg):
         first_time = False
     pose_current = msg  # Update current pose
 
-# Subscriber for the EKF state messages
-rospy.Subscriber("/honey/gnc/ekf", EkfState, callback)
-
-# Maximum velocity limit
-max_velocity = 0.05
+# Callback function for dynamic reconfigure updates
+# Inputs: config (AutoNavConfig) - the updated configuration parameters
+#         level (int) - indicates if the callback is being called from the parameter server
+# Outputs: config (AutoNavConfig) - the updated configuration parameters
+def reconfigure_callback(config, level):
+    global desired_position
+    desired_position.x = config['desired_position_x']
+    desired_position.y = config['desired_position_y']
+    desired_position.z = config['desired_position_z']
+    return config
 
 # Function to calculate control commands
 # Inputs: None
@@ -68,7 +70,7 @@ def calculate_commands():
     cmd_msg.header.stamp = rospy.Time.now()
     cmd_msg.header.frame_id = "body"
     cmd_msg.control_mode = 2  # Use force/torque control mode
-    
+
     max_force = 0.085  # Maximum force to be applied
 
     if distance_to_target > 0.6:
@@ -95,13 +97,29 @@ def calculate_commands():
     else:
         cmd_msg.control_mode = 1  # Switch to position hold mode if close to target
 
-    pub.publish(cmd_msg)  # Publish the command
+    return cmd_msg
 
-# Main loop to continuously calculate and publish commands
-# Inputs: None
-# Outputs: None
-while not rospy.is_shutdown():
-    cmd_msg = calculate_commands()  # Calculate new commands
-    time.sleep(0.01)  # Sleep for 10ms before next iteration
+# Main function
+if __name__ == "__main__":
+    # Initialize the ROS node
+    rospy.init_node("auto_nav_dyn")
 
+    # Subscriber for the EKF state messages
+    rospy.Subscriber("/honey/gnc/ekf", EkfState, callback)
 
+    # Publisher for the FamCommand messages
+    pub = rospy.Publisher("/honey/gnc/ctl/command", FamCommand, queue_size=1)
+
+    # Dynamic reconfigure server
+    srv = Server(AutoNavConfig, reconfigure_callback)
+
+    # Set the rate for the control loop
+    rate = rospy.Rate(80)
+
+    # Main loop to continuously calculate and publish commands
+    while not rospy.is_shutdown():
+        cmd_msg = calculate_commands()  # Calculate new commands
+        pub.publish(cmd_msg)  # Publish the command
+        rate.sleep()  # Use ROS rate sleep for better timing accuracy
+
+        

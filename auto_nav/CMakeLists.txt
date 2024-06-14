@@ -11,16 +11,24 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  ff_msgs
+  dynamic_reconfigure
+  message_generation
+  geometry_msgs
+  ff_serial
 )
 
 ## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS system)
+
+##find_package(PkgConfig REQUIRED)
+##pkg_check_modules(LIBSERIAL REQUIRED libserial)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
+#catkin_python_setup()
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -54,11 +62,11 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
+add_service_files(
+    FILES
+    StopNode.srv
 #   Service2.srv
-# )
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -68,10 +76,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
+generate_messages(
+   DEPENDENCIES
+   std_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -88,10 +96,10 @@ find_package(catkin REQUIRED COMPONENTS
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
+generate_dynamic_reconfigure_options(
+   cfg/AutoNavConfig.cfg
 #   cfg/DynReconf2.cfg
-# )
+ )
 
 ###################################
 ## catkin specific configuration ##
@@ -103,10 +111,10 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES auto_nav
-#  CATKIN_DEPENDS roscpp rospy std_msgs
-#  DEPENDS system_lib
+  INCLUDE_DIRS include
+  LIBRARIES auto_nav 
+  CATKIN_DEPENDS roscpp rospy std_msgs ff_msgs message_runtime geometry_msgs ff_serial
+  #DEPENDS system_lib
 )
 
 ###########
@@ -116,14 +124,17 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
+  ${FF_SERIAL_INCLUDE_DIRS} 
+##  /home/iss-interns/astrobee/src/gnc/ctl/include/ctl
 )
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/auto_nav.cpp
 # )
+
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -135,6 +146,23 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/auto_nav_node.cpp)
 
+
+## Declare a C++ executable: zones_pub
+add_executable(move_printer src/move_printer.cpp)
+add_dependencies(move_printer ${catkin_EXPORTED_TARGETS})
+target_link_libraries(move_printer ${catkin_LIBRARIES})
+
+## Declare a C++ executable: zones_pub
+add_executable(gcode_printer src/gcode_printer.cpp)
+add_dependencies(gcode_printer ${catkin_EXPORTED_TARGETS})
+target_link_libraries(gcode_printer ${catkin_LIBRARIES})
+
+## Declare a C++ executable: zones_pub
+add_executable(auto_nav src/auto_nav.cpp)
+add_dependencies(auto_nav ${catkin_EXPORTED_TARGETS})
+target_link_libraries(auto_nav ${catkin_LIBRARIES})
+
+  
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -146,10 +174,13 @@ include_directories(
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_node
-#   ${catkin_LIBRARIES}
-# )
+## target_link_libraries(
+#${PROJECT_NAME}_node
+ ##  ${catkin_LIBRARIES}
+ ## )
 
+
+  
 #############
 ## Install ##
 #############
@@ -159,11 +190,10 @@ include_directories(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-# catkin_install_python(PROGRAMS
+#catkin_install_python(PROGRAMS
 #   scripts/my_python_script
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
-
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html
 # install(TARGETS ${PROJECT_NAME}_node
@@ -172,11 +202,11 @@ include_directories(
 
 ## Mark libraries for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html
-# install(TARGETS ${PROJECT_NAME}
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
-# )
+ ##install(TARGETS ${PROJECT_NAME}
+   ##ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  ## LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  ## RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+ ##)
 
 ## Mark cpp header files for installation
 # install(DIRECTORY include/${PROJECT_NAME}/
@@ -191,6 +221,10 @@ include_directories(
 #   # myfile2
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
+
+install(TARGETS gcode_printer DESTINATION bin)
+install(TARGETS move_printer DESTINATION bin)
+install(TARGETS auto_nav DESTINATION bin)
 
 #############
 ## Testing ##
