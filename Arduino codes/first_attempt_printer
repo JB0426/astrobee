@@ -1,0 +1,250 @@
+//   digitalWrite(X_DIR_PIN,LOW); 
+//   digitalWrite(Y_DIR_PIN,LOW); 
+//   digitalWrite(Z_DIR_PIN,LOW); 
+
+//   for(x = 0; x < 17.77*(ang*-1); x++)
+//   {
+//     digitalWrite(X_STEP_PIN,HIGH); 
+//     digitalWrite(Y_STEP_PIN,HIGH); 
+//     digitalWrite(Z_STEP_PIN,HIGH); 
+//     delayMicroseconds(1000); 
+//     digitalWrite(X_STEP_PIN,LOW);
+//     digitalWrite(Y_STEP_PIN,LOW);
+//     digitalWrite(Z_STEP_PIN,LOW); 
+//     delayMicroseconds(1000); 
+//   }
+//   delay(1000); 
+//   break;
+//   }
+
+// void ccw(int& ang, int& axis)
+// {
+//   switch (axis)
+//   digitalWrite(X_DIR_PIN,HIGH);
+//   digitalWrite(Y_DIR_PIN,HIGH); 
+//   digitalWrite(Z_DIR_PIN,HIGH); 
+
+//   for(x = 0; x < 17.77*ang; x++) {
+//     digitalWrite(X_STEP_PIN,HIGH); 
+//     digitalWrite(Y_STEP_PIN,HIGH); 
+//     digitalWrite(Z_STEP_PIN,HIGH); 
+//     delayMicroseconds(1000); 
+//     digitalWrite(X_STEP_PIN,LOW); 
+//     digitalWrite(Y_STEP_PIN,LOW);
+//     digitalWrite(Z_STEP_PIN,LOW);
+//     delayMicroseconds(1000); 
+//   }
+//   delay(1000); 
+//   }
+
+// #include <ros.h>
+// #include <std_msgs/Empty.h>
+// #include <std_msgs/Int8.h>
+// signed int anglex;
+// signed int angley;
+// signed int anglez;
+// int x;
+// ros::NodeHandle  nh;
+
+// #define X_STEP_PIN 37
+// #define X_DIR_PIN 48
+// #define X_MIN_PIN 12
+// #define X_MAX_PIN -1 //was 24 - set to -1 to disable it, so we can use pin 24 for the ISR signal pin
+// #define X_ENABLE_PIN 29
+// #define X_MS1_PIN 40
+// #define X_MS2_PIN 41
+
+// #define Y_STEP_PIN 36
+// #define Y_DIR_PIN 49
+// #define Y_MIN_PIN 11
+// #define Y_MAX_PIN -1 //was 23 - set to -1 to disable it, so we can use pin 23 for the LCD signal pin (well, or ISR)
+// #define Y_ENABLE_PIN 28
+// #define Y_MS1_PIN 69
+// #define Y_MS2_PIN 39
+
+// #define Z_STEP_PIN 35
+// #define Z_DIR_PIN 47
+// #define Z_MIN_PIN 10
+// #define Z_MAX_PIN 30
+// #define Z_ENABLE_PIN 27
+// #define Z_MS1_PIN 68
+// #define Z_MS2_PIN 67
+
+// #define HEATER_BED_PIN 3
+// #define TEMP_BED_PIN 2
+
+// #define HEATER_0_PIN  9
+// #define TEMP_0_PIN 0
+
+// #define HEATER_1_PIN 7
+// #define TEMP_1_PIN 1
+
+
+
+// #define E0_STEP_PIN         34
+// #define E0_DIR_PIN          43
+// #define E0_ENABLE_PIN       26
+// #define E0_MS1_PIN 65
+// #define E0_MS2_PIN 66
+
+// #define E1_STEP_PIN         33
+// #define E1_DIR_PIN          42
+// #define E1_ENABLE_PIN       25
+// #define E1_MS1_PIN 63
+// #define E1_MS2_PIN 64
+
+// #define DIGIPOTSS_PIN 38
+// #define DIGIPOT_CHANNELS {4,5,3,0,1} // X Y Z E0 E1 digipot channels to stepper driver mapping
+
+// #define SDPOWER            -1
+// #define SDSS               53
+// #define LED_PIN            13
+// #define FAN_PIN            8
+// #define PS_ON_PIN          4
+// #define KILL_PIN           -1 //80 with Smart Controller LCD
+// #define SUICIDE_PIN        -1  //PIN that has to be turned on right after start, to keep power flowing.
+
+
+
+// #define ISR_signal 23 // set pin 24 on RAMBo (X MAX signal pin on the board itself) to "ISR_signal" for signaling the state of the ISR
+// #define LCD_signal 24 //use the XMAX signal pin for the LCD update signal, YMAX signal pin for ISR_signal
+
+
+// // Constants for stepper motor control
+// //const int stepsPerRevolution = 200; // Change according to your motor's steps per revolution
+// //const int anglePerStep = 360 / stepsPerRevolution; // Calculate angle per step
+
+// void pwmz( const std_msgs::Int8& cmd_msg)
+// {
+//   anglez=cmd_msg.data;
+//   if (anglez<0){
+//     cw(anglez, 3);
+//   }else{
+//     ccw(anglez, 3);
+//   }
+// }
+
+// void pwmy( const std_msgs::Int8& cmd_msg)
+// {
+//   angley=cmd_msg.data;
+//   if (angley<0){
+//     cw(angley, 2);
+//   }else{
+//     ccw(angley, 2);
+//   }
+// }
+
+// void pwmx( const std_msgs::Int8& cmd_msg)
+// {
+//   anglex=cmd_msg.data;
+//   if (anglex<0){
+//     cw(anglex, 1);
+//   }else{
+//     ccw(anglex, 1);
+//   }
+// }
+
+// ros::Subscriber<std_msgs::Int8> subx("stepperx", pwmx);
+// ros::Subscriber<std_msgs::Int8> suby("steppery", pwmy);
+// ros::Subscriber<std_msgs::Int8> subz("stepperz", pwmz);
+
+// void setup() {
+//   // Set pin modes
+//   pinMode(X_STEP_PIN, OUTPUT);
+//   pinMode(X_DIR_PIN, OUTPUT);
+//   pinMode(X_ENABLE_PIN, OUTPUT);
+//   pinMode(Y_STEP_PIN, OUTPUT);
+//   pinMode(Y_DIR_PIN, OUTPUT);
+//   pinMode(Y_ENABLE_PIN, OUTPUT);
+//   pinMode(Z_STEP_PIN, OUTPUT);
+//   pinMode(Z_DIR_PIN, OUTPUT);
+//   pinMode(Z_ENABLE_PIN, OUTPUT);
+//   nh.initNode();
+//   nh.subscribe(subx);
+//   nh.subscribe(suby);
+//   nh.subscribe(subz);
+// }
+
+// void loop() {
+//   // Example: Move the motor by 90 degrees
+//   // Enable the stepper motor
+//   //digitalWrite(X_ENABLE_PIN, LOW);
+//   // digitalWrite(Y_ENABLE_PIN, LOW);
+//   //digitalWrite(Z_ENABLE_PIN, LOW);
+//   // delay(1000); // Wait for 1 second
+//   nh.spinOnce();
+//   delay(10);
+
+// }
+
+// // Function to move the stepper motor by a given angle
+// void cw(int ang, int axis)
+// {
+//   switch(axis){
+//     case 1:
+//       digitalWrite(X_DIR_PIN,LOW); 
+//       for(x = 0; x < 17.77*(ang*-1); x++){
+//         digitalWrite(X_STEP_PIN,HIGH); 
+//         delayMicroseconds(1000);
+//         digitalWrite(X_STEP_PIN,LOW);
+//         delayMicroseconds(1000); 
+//       }
+//       delay(1000);
+//       break; 
+//     case 2:
+//       digitalWrite(Y_DIR_PIN,LOW);
+//       for(x = 0; x < 17.77*(ang*-1); x++){
+//         digitalWrite(Y_STEP_PIN,HIGH); 
+//         delayMicroseconds(1000); 
+//         digitalWrite(Y_STEP_PIN,LOW);
+//         delayMicroseconds(1000); 
+//       }
+//       delay(1000); 
+//       break;
+//     case 3:
+//       digitalWrite(Z_DIR_PIN,LOW);
+//       for(x = 0; x < 17.77*(ang*-1); x++){
+//         digitalWrite(Z_STEP_PIN,HIGH); 
+//         delayMicroseconds(1000); 
+//         digitalWrite(Z_STEP_PIN,LOW); 
+//         delayMicroseconds(1000);
+//       }
+//       delay(1000);
+//       break;
+//   }
+// }
+// void ccw(int ang, int axis)
+// {
+//   switch(axis){
+//     case 1:
+//       digitalWrite(X_DIR_PIN,LOW); 
+//       for(x = 0; x < 17.77*(ang*-1); x++){
+//         digitalWrite(X_STEP_PIN,HIGH); 
+//         delayMicroseconds(1000);
+//         digitalWrite(X_STEP_PIN,LOW);
+//         delayMicroseconds(1000); 
+//       }
+//       delay(1000);
+//       break; 
+//     case 2:
+//       digitalWrite(Y_DIR_PIN,LOW);
+//       for(x = 0; x < 17.77*ang; x++){
+//         digitalWrite(Y_STEP_PIN,HIGH); 
+//         delayMicroseconds(1000); 
+//         digitalWrite(Y_STEP_PIN,LOW);
+//         delayMicroseconds(1000); 
+//       }
+//       delay(1000); 
+//       break;
+//     case 3:
+//       digitalWrite(Z_DIR_PIN,LOW);
+//       for(x = 0; x < 17.77*ang; x++){
+//         digitalWrite(Z_STEP_PIN,HIGH); 
+//         delayMicroseconds(1000); 
+//         digitalWrite(Z_STEP_PIN,LOW); 
+//         delayMicroseconds(1000);
+//       }
+//       delay(1000);
+//       break;
+//   }
+// }
